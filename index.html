@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ride Weather Planner</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #map { height: 400px; margin-top: 20px; }
+        #elevationChart { height: 200px; margin-top: 20px; }
+        label { display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<h2>Ride Weather Planner</h2>
+
+<form id="rideForm">
+    <label>Upload GPX File:
+        <input type="file" id="gpxFile" accept=".gpx" required>
+    </label>
+
+    <label>Ride Date:
+        <input type="date" id="rideDate" required>
+    </label>
+
+    <label>Leaving Time:
+        <input type="time" id="startTime" required>
+    </label>
+
+    <label>Finish Time:
+        <input type="time" id="endTime" required>
+    </label>
+
+    <button type="submit">Get Weather</button>
+</form>
+
+<div id="map"></div>
+<canvas id="elevationChart"></canvas>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
