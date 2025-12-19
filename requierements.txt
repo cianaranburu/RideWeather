@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+gpxpy
+requests
+python-multipart
