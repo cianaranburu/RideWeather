@@ -1,4 +1,5 @@
 const map = L.map('map').setView([0, 0], 2);
+const server = "https://rideweather-ikbh.onrender.com/ride-weather/"
 
 // OpenStreetMap tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -27,7 +28,7 @@ document.getElementById('rideForm').addEventListener('submit', async (e) => {
     formData.append("end_time_str", endDateTime);
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/ride-weather/", {
+        const response = await fetch(server, {
             method: "POST",
             body: formData
         });
@@ -151,3 +152,4 @@ function plotElevationWithPrecipAndWind(data) {
         }]
     });
 }
+
