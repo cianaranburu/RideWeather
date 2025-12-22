@@ -5,9 +5,9 @@ import io
 import math
 
 
-# -----------------------------
-# Helpers
-# -----------------------------
+# --------------------------------
+# Distance helpers
+# --------------------------------
 
 def haversine(lat1, lon1, lat2, lon2):
     """Distance between two lat/lon points in km"""
@@ -33,7 +33,6 @@ def interpolate_timestamps(points, start_time, end_time):
 
 
 def select_points_by_distance(points, distances, step_km):
-    """Return indices of points every step_km"""
     selected = [0]
     last_km = 0.0
 
@@ -48,9 +47,9 @@ def select_points_by_distance(points, distances, step_km):
     return selected
 
 
-# -----------------------------
+# --------------------------------
 # Weather API
-# -----------------------------
+# --------------------------------
 
 def get_weather_open_meteo(lat, lon, timestamp):
     date_str = timestamp.strftime("%Y-%m-%d")
@@ -58,7 +57,12 @@ def get_weather_open_meteo(lat, lon, timestamp):
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": "temperature_2m,windspeed_10m,precipitation",
+        "hourly": (
+            "temperature_2m,"
+            "windspeed_10m,"
+            "winddirection_10m,"
+            "precipitation"
+        ),
         "start_date": date_str,
         "end_date": date_str,
         "timezone": "auto"
@@ -70,9 +74,11 @@ def get_weather_open_meteo(lat, lon, timestamp):
         return {"error": f"API error: {response.status_code}"}
 
     data = response.json()
+
     hours = data["hourly"]["time"]
     temperatures = data["hourly"]["temperature_2m"]
-    winds = data["hourly"]["windspeed_10m"]
+    winds_ms = data["hourly"]["windspeed_10m"]
+    wind_dirs = data["hourly"]["winddirection_10m"]
     precip = data["hourly"]["precipitation"]
 
     closest_idx = min(
@@ -80,17 +86,20 @@ def get_weather_open_meteo(lat, lon, timestamp):
         key=lambda i: abs(datetime.fromisoformat(hours[i]) - timestamp)
     )
 
+    wind_kmh = round(winds_ms[closest_idx] * 3.6, 1)
+
     return {
         "temperature": temperatures[closest_idx],
-        "wind_speed": winds[closest_idx],
+        "wind_speed_kmh": wind_kmh,
+        "wind_direction_deg": wind_dirs[closest_idx],
         "precipitation": precip[closest_idx],
         "timestamp": timestamp.isoformat()
     }
 
 
-# -----------------------------
-# Main logic
-# -----------------------------
+# --------------------------------
+# Main function
+# --------------------------------
 
 def get_ride_weather(file_obj, start_time_str, end_time_str):
     start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M")
@@ -101,7 +110,7 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
 
     points = []
     elevations = []
-    distances = [0.0]  # cumulative distance in km
+    distances = [0.0]
 
     prev_lat = None
     prev_lon = None
@@ -122,13 +131,9 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
     if not points:
         raise ValueError("No points found in GPX")
 
-    # Interpolate timestamps along full path
     timestamps = interpolate_timestamps(points, start_time, end_time)
 
-    # -----------------------------
-    # Distance-based sampling
-    # -----------------------------
-    STEP_KM = 6.0  # 🔧 change this to whatever you want
+    STEP_KM = 6.0  # 🔧 change distance between weather samples here
 
     selected_indices = select_points_by_distance(points, distances, STEP_KM)
 
@@ -137,6 +142,7 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
     for i in selected_indices:
         lat, lon = points[i]
         ts = timestamps[i]
+
         weather = get_weather_open_meteo(lat, lon, ts)
 
         results.append({
