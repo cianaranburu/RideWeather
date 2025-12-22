@@ -57,44 +57,29 @@ def get_weather_open_meteo(lat, lon, timestamp):
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": (
-            "temperature_2m,"
-            "windspeed_10m,"
-            "winddirection_10m,"
-            "precipitation"
-        ),
+        "hourly": "temperature_2m,windspeed_10m,winddirection_10m,precipitation",
         "start_date": date_str,
         "end_date": date_str,
         "timezone": "auto"
     }
-
-    response = requests.get(url, params=params, timeout=10)
-
-    if response.status_code != 200:
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        hours = data["hourly"]["time"]
+        temperatures = data["hourly"]["temperature_2m"]
+        winds = data["hourly"]["windspeed_10m"]
+        wind_dirs = data["hourly"]["winddirection_10m"]
+        precip = data["hourly"]["precipitation"]
+        closest_idx = min(range(len(hours)), key=lambda i: abs(datetime.fromisoformat(hours[i]) - timestamp))
+        return {
+            "temperature": temperatures[closest_idx],
+            "wind_speed_kmh": round(winds[closest_idx] * 3.6, 1),  # convert m/s → km/h
+            "wind_direction_deg": wind_dirs[closest_idx],
+            "precipitation": precip[closest_idx],
+            "timestamp": timestamp.isoformat()
+        }
+    else:
         return {"error": f"API error: {response.status_code}"}
-
-    data = response.json()
-
-    hours = data["hourly"]["time"]
-    temperatures = data["hourly"]["temperature_2m"]
-    winds_ms = data["hourly"]["windspeed_10m"]
-    wind_dirs = data["hourly"]["winddirection_10m"]
-    precip = data["hourly"]["precipitation"]
-
-    closest_idx = min(
-        range(len(hours)),
-        key=lambda i: abs(datetime.fromisoformat(hours[i]) - timestamp)
-    )
-
-    wind_kmh = round(winds_ms[closest_idx] * 3.6, 1)
-
-    return {
-        "temperature": temperatures[closest_idx],
-        "wind_speed_kmh": wind_kmh,
-        "wind_direction_deg": wind_dirs[closest_idx],
-        "precipitation": precip[closest_idx],
-        "timestamp": timestamp.isoformat()
-    }
 
 
 # --------------------------------
@@ -158,3 +143,4 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
         "full_path": points,
         "elevation_profile": elevations
     }
+
