@@ -1,0 +1,38 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+        #map { height: 400px; margin-top: 20px; }
+        #elevationChart { height: 200px; margin-top: 20px; }
+        label { display: block; margin-top: 10px; }
+
+#loadingOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#loadingOverlay.hidden {
+    display: none;
+}
+
+.loader {
+    text-align: center;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 6px solid #ddd;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

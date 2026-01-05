@@ -73,7 +73,7 @@ def get_weather_open_meteo(lat, lon, timestamp):
         closest_idx = min(range(len(hours)), key=lambda i: abs(datetime.fromisoformat(hours[i]) - timestamp))
         return {
             "temperature": temperatures[closest_idx],
-            "wind_speed_kmh": round(winds[closest_idx] * 3.6, 1),  # convert m/s → km/h
+            "wind_speed_kmh": round(winds[closest_idx] * 0.75, 1),  # convert to cyclists height
             "wind_direction_deg": wind_dirs[closest_idx],
             "precipitation": precip[closest_idx],
             "timestamp": timestamp.isoformat()
