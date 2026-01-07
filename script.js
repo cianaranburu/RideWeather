@@ -1,10 +1,13 @@
+/************************************************************
+ * Globals
+ ************************************************************/
 const map = L.map('map').setView([0, 0], 2);
 const server = "http://127.0.0.1:8000/ride-weather/";
 const STEP_KM = 6;
 
-/* --------------------
-   Loading helpers
--------------------- */
+/************************************************************
+ * Loading helpers
+ ************************************************************/
 function showLoading() {
     document.getElementById("loadingOverlay")?.classList.remove("hidden");
 }
@@ -12,16 +15,16 @@ function hideLoading() {
     document.getElementById("loadingOverlay")?.classList.add("hidden");
 }
 
-/* --------------------
-   Map setup
--------------------- */
+/************************************************************
+ * Map setup
+ ************************************************************/
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-/* --------------------
-   Wind helpers
--------------------- */
+/************************************************************
+ * Wind helpers
+ ************************************************************/
 function bearing(lat1, lon1, lat2, lon2) {
     const toRad = d => d * Math.PI / 180;
     const y = Math.sin(toRad(lon2 - lon1)) * Math.cos(toRad(lat2));
@@ -40,15 +43,15 @@ function windType(rideDir, windFrom) {
     return "crosswind";
 }
 
-/* --------------------
-   Visual helpers
--------------------- */
+/************************************************************
+ * Visual helpers
+ ************************************************************/
 function windArrowSize(speed) {
     return 12 + Math.min(speed, 40) / 40 * 20;
 }
 
 function tempColor(t) {
-    if (t < 0) return '#7797acff';
+    if (t < 0) return '#7797ac';
     if (t < 5) return '#3498db';
     if (t < 10) return '#5dade2';
     if (t < 18) return '#27ae60';
@@ -58,17 +61,16 @@ function tempColor(t) {
 
 function precipColor(mm) {
     if (!mm) return 'rgba(0,0,0,0)';
-    if (mm < 0.1) return 'rgba(180,220,255,0.25)';
-    if (mm < 0.5) return 'rgba(120,180,255,0.35)';
-    if (mm < 1.0) return 'rgba(70,140,255,0.5)';
-    if (mm < 2.5) return 'rgba(30,90,200,0.65)';
-    if (mm < 5.0) return 'rgba(0,50,150,0.75)';
+    if (mm < 0.1) return 'rgba(180,220,255,0.3)';
+    if (mm < 0.5) return 'rgba(120,180,255,0.45)';
+    if (mm < 1.0) return 'rgba(70,140,255,0.6)';
+    if (mm < 2.5) return 'rgba(30,90,200,0.75)';
     return 'rgba(0,20,100,0.9)';
 }
 
-/* --------------------
-   SVG icons
--------------------- */
+/************************************************************
+ * Wind icons
+ ************************************************************/
 const windIcons = {
     headwind: new Image(),
     tailwind: new Image()
@@ -76,11 +78,11 @@ const windIcons = {
 windIcons.headwind.src = 'media/headwind.svg';
 windIcons.tailwind.src = 'media/tailwind.svg';
 
-/* --------------------
-   Map rendering
--------------------- */
+/************************************************************
+ * Map rendering
+ ************************************************************/
 function displayWeatherOnMap(data) {
-    if (!data?.ride_weather?.length) return;
+    if (!Array.isArray(data?.full_path) || data.full_path.length === 0) return;
 
     map.eachLayer(l => {
         if (l instanceof L.Marker || l instanceof L.Polyline) {
@@ -90,7 +92,7 @@ function displayWeatherOnMap(data) {
 
     L.polyline(data.full_path, { color: 'blue' }).addTo(map);
 
-    data.ride_weather.forEach(p => {
+    data.ride_weather?.forEach(p => {
         L.marker([p.lat, p.lon]).addTo(map).bindPopup(`
             <b>Time:</b> ${p.timestamp}<br>
             <b>Temp:</b> ${p.weather.temperature} °C<br>
@@ -102,22 +104,26 @@ function displayWeatherOnMap(data) {
     map.fitBounds(data.full_path);
 }
 
-/* --------------------
-   Custom plugin (wind + temp on top)
--------------------- */
+/************************************************************
+ * Wind + temperature overlay plugin
+ ************************************************************/
 const windTempPlugin = {
     id: 'windTemp',
     afterDatasetsDraw(chart) {
-        const { ctx, scales: { x, yElevation } } = chart;
+        const x = chart.scales.x;
+        const yElevation = chart.scales.yElevation;
+        if (!x || !yElevation) return;
+
+        const ctx = chart.ctx;
         const weather = chart.data.datasets.find(d => d.id === 'weather');
         if (!weather) return;
 
         ctx.save();
-        ctx.font = '20px Arial';
+        ctx.font = '18px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
 
-        const yTop = yElevation.top + 8;
+        const yTop = yElevation.top + 6;
 
         weather.data.forEach(p => {
             const xPos = x.getPixelForValue(p.x);
@@ -129,37 +135,50 @@ const windTempPlugin = {
                     ctx.drawImage(img, xPos - size / 2, yTop, size, size);
                 }
             }
-
-            ctx.fillStyle = tempColor(p.temperature);
-            ctx.fillText(`${Math.round(p.temperature)}°C`, xPos, yTop + 28);
+            t = Math.round(p.temperature);
+            ctx.fillStyle = tempColor(t);
+            ctx.fillText(`${t}°C`, xPos, yTop + 26);
         });
 
         ctx.restore();
     }
 };
 
-/* --------------------
-   Form submit
--------------------- */
+/************************************************************
+ * Form submit
+ ************************************************************/
 document.getElementById('rideForm').addEventListener('submit', async e => {
     e.preventDefault();
     showLoading();
 
     try {
-        const gpxFile = document.getElementById('gpxFile').files[0];
-        const rideDate = document.getElementById('rideDate').value;
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
+        const gpxFile = document.getElementById('gpxFile')?.files[0];
+        const rideDate = document.getElementById('rideDate')?.value;
+        const startTime = document.getElementById('startTime')?.value;
+        const endTime = document.getElementById('endTime')?.value;
+
+        if (!gpxFile || !rideDate || !startTime || !endTime) {
+            throw new Error("Missing form fields");
+        }
 
         const formData = new FormData();
         formData.append("gpx_file", gpxFile);
         formData.append("start_time_str", `${rideDate} ${startTime}`);
         formData.append("end_time_str", `${rideDate} ${endTime}`);
 
-        const res = await fetch(server, { method: "POST", body: formData });
-        if (!res.ok) throw new Error("Server error");
+        const res = await fetch(server, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            console.error("Backend error:", err);
+            throw new Error("Server error");
+        }
 
         const data = await res.json();
+        console.log("Weather data received:", data);
 
         displayWeatherOnMap(data);
         plotChart(data);
@@ -172,21 +191,30 @@ document.getElementById('rideForm').addEventListener('submit', async e => {
     }
 });
 
-/* --------------------
-   Chart
--------------------- */
+/************************************************************
+ * Chart (6 km blocks)
+ ************************************************************/
 function plotChart(data) {
+    if (!Array.isArray(data?.ride_weather) || data.ride_weather.length === 0) return;
+    if (!Array.isArray(data?.elevation_profile) || data.elevation_profile.length === 0) return;
+
     const ctx = document.getElementById('elevationChart').getContext('2d');
     if (window.chart) window.chart.destroy();
 
-    const totalDistance = data.ride_weather.at(-1).distance_km;
+    /* --- round UP GPX length --- */
+    const totalDistance = Math.ceil(
+        data.ride_weather[data.ride_weather.length - 1].distance_km
+    );
+
     const blockCount = Math.ceil(totalDistance / STEP_KM);
 
+    /* --- elevation --- */
     const elevation = data.elevation_profile.map((e, i) => ({
         x: i / (data.elevation_profile.length - 1) * totalDistance,
         y: e
     }));
 
+    /* --- wind direction --- */
     data.ride_weather.forEach((p, i) => {
         if (i === 0) p.windType = 'crosswind';
         else {
@@ -202,10 +230,15 @@ function plotChart(data) {
     const weather = [];
 
     for (let i = 0; i < blockCount; i++) {
-        const p = data.ride_weather[i] || data.ride_weather.at(-1);
         const start = i * STEP_KM;
-        const end = start + STEP_KM;
-        const center = start + STEP_KM / 2;
+        const end = Math.min(start + STEP_KM, totalDistance);
+        const center = start + (end - start) / 2;
+
+        const p =
+            data.ride_weather.find(r => r.distance_km >= center) ||
+            data.ride_weather[data.ride_weather.length - 1];
+
+        if (!p?.weather) continue;
 
         precip.push({
             x: center,
@@ -223,55 +256,34 @@ function plotChart(data) {
     }
 
     window.chart = new Chart(ctx, {
-        plugins: [windTempPlugin],
-        data: {
-            datasets: [
-                {
-                    type: 'scatter',
-                    id: 'weather',
-                    data: weather,
-                    parsing: false,
-                    pointRadius: 0
-                },
-                {
-                    type: 'bar',
-                    label: 'Precipitation (mm)',
-                    data: precip,
-                    parsing: false,
-                    yAxisID: 'yRain',
-                    backgroundColor: c => precipColor(c.raw?.y),
-                    barPercentage: 1,
-                    categoryPercentage: 1
-                },
-                {
-                    type: 'line',
-                    label: 'Elevation (m)',
-                    data: elevation,
-                    parsing: false,
-                    borderColor: 'green',
-                    pointRadius: 0,
-                    yAxisID: 'yElevation'
-                }
-            ]
-        },
-        options: {
-            animation: false,
-            scales: {
-                x: {
-                    type: 'linear',
-                    min: 0,
-                    title: { display: true, text: 'Distance (km)' }
-                },
-                yElevation: {
-                    position: 'left',
-                    title: { display: true, text: 'Elevation (m)' }
-                },
-                yRain: {
-                    position: 'right',
-                    grid: { drawOnChartArea: false },
-                    title: { display: true, text: 'Rain (mm)' }
+    plugins: [windTempPlugin],
+    data: {
+        datasets: [
+            {
+                type: 'scatter',
+                id: 'weather',
+                data: weather,
+                parsing: false,
+                pointRadius: 0
+            },
+            { type: 'line', label: 'Elevation (m)', data: elevation, yAxisID: 'yElevation', borderColor: 'green', pointRadius: 0 },
+            { type: 'bar', label: 'Precipitation (mm)', data: precip, yAxisID: 'yRain', backgroundColor: c => precipColor(c.raw?.y), barPercentage: 1, categoryPercentage: 1 }
+        ]
+    },
+    options: {
+        animation: false,
+        plugins: {
+            legend: {
+                labels: {
+                    filter: item => item.datasetId !== 'weather'  // 👈 this removes grey box
                 }
             }
+        },
+        scales: {
+            x: { type: 'linear', min: 0, max: totalDistance, bounds: 'ticks', offset: false, title: { display: true, text: 'Distance (km)' } },
+            yElevation: { position: 'left', title: { display: true, text: 'Elevation (m)' } },
+            yRain: { position: 'right', min: 0, max: 10, grid: { drawOnChartArea: false }, title: { display: true, text: 'Rain (mm)' } }
         }
-    });
+    }
+});
 }
