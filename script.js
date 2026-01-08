@@ -51,6 +51,7 @@ function windArrowSize(speed) {
 }
 
 function tempColor(t) {
+    t = Math.round(t); // round for color consistency
     if (t < 0) return '#7797ac';
     if (t < 5) return '#3498db';
     if (t < 10) return '#5dade2';
@@ -185,7 +186,7 @@ document.getElementById('rideForm').addEventListener('submit', async e => {
 });
 
 /************************************************************
- * Chart (6 km blocks)
+ * Chart (6 km blocks, smooth elevation, precipitation, weather)
  ************************************************************/
 function plotChart(data) {
     if (!Array.isArray(data?.ride_weather) || !data.ride_weather.length) return;
@@ -205,6 +206,11 @@ function plotChart(data) {
         y: e
     }));
 
+    // Elevation min/max with +100m buffer on top
+    const elevMin = Math.min(...data.elevation_profile);
+    const elevMax = Math.max(...data.elevation_profile) + 100;
+
+    // Wind type
     data.ride_weather.forEach((p, i) => {
         if (i === 0) p.windType = 'crosswind';
         else {
@@ -249,7 +255,8 @@ function plotChart(data) {
                     data: elevation,
                     yAxisID: 'yElevation',
                     borderColor: 'green',
-                    pointRadius: 0
+                    pointRadius: 0,
+                    tension: 0.15 // smoothness factor
                 },
                 {
                     type: 'bar',
@@ -258,24 +265,34 @@ function plotChart(data) {
                     yAxisID: 'yRain',
                     backgroundColor: c => precipColor(c.raw?.y),
                     barPercentage: 1,
-                    categoryPercentage: 1
+                    categoryPercentage: 1,
+                    barThickness: 'flex' // remove gaps
                 }
             ],
             weatherOverlay: weather
         },
         options: {
             animation: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        filter: item => item.datasetId !== 'weather' // remove grey box
+                    }
+                }
+            },
             scales: {
                 x: {
                     type: 'linear',
                     min: 0,
                     max: totalDistance,
-                    bounds: 'data',      
+                    bounds: 'data',
                     offset: false,
                     title: { display: true, text: 'Distance (km)' }
                 },
                 yElevation: {
                     position: 'left',
+                    min: elevMin,
+                    max: elevMax,
                     title: { display: true, text: 'Elevation (m)' }
                 },
                 yRain: {
