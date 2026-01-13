@@ -1,7 +1,8 @@
 import { displayWeatherOnMap } from './map.js';
 import { plotChart } from './chart.js';
 
-const server = "https://rideweather-sua8.onrender.com/";
+const server = "https://rideweather-sua8.onrender.com/ride-weather/";
+
 
 document.getElementById('rideForm').addEventListener('submit', async e=>{
     e.preventDefault();
