@@ -5,6 +5,12 @@ from weatherGetter import get_ride_weather
 
 app = FastAPI()
 
+
+# Health check (IMPORTANT for Render)
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
 # Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
@@ -26,3 +32,4 @@ async def ride_weather_endpoint(
     except Exception as e:
         print("Backend error:", e)
         return JSONResponse({"error": str(e)}, status_code=500)
+
