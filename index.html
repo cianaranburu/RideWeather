@@ -2,49 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ride Weather Planner</title>
+    <title>GPX EGURALDIA</title>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- App styles -->
     <link rel="stylesheet" href="style.css"/>
-    <link rel="icon" href="media/favicon.ico" type="image/x-icon">
+
+    <link rel="icon" href="media/tailwind.svg" type="image/x-icon">
 </head>
 <body>
 
-<h2>Ride Weather Planner</h2>
+<!-- GRID BACKGROUND -->
+<div id="background">
+    <div class="grid-overlay"></div>
+</div>
 
-<form id="rideForm">
-    <label>Upload GPX File:
-        <input type="file" id="gpxFile" accept=".gpx" required>
-    </label>
+<div class="app-title">
+    <img src="media/tailwind.svg" alt="" class="app-icon">
+    <h2>GPX EGURALDIA</h2>
+</div>
 
-    <label>Ride Date:
-        <input type="date" id="rideDate" required>
-    </label>
+<div class="top-layout">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+        
 
-    <label>Leaving Time:
-        <input type="time" id="startTime" required>
-    </label>
+        <form id="rideForm">
+            <label>Igo GPX Fitxategia</label>
+            <input type="file" id="gpxFile" accept=".gpx" required>
+            
 
-    <label>Finish Time:
-        <input type="time" id="endTime" required>
-    </label>
+            <label>Eguna</label>
+            <div class="input-box">
+                <input type="date" id="rideDate" required>  
+            </div>
+            
+            
+            
+            
+            <label>Abiatze Ordua</label>
+            <div class="input-box">
+                <input type="time" id="startTime" class="time-input" required>
+            </div>
 
-    <button type="submit">Get Weather</button>
-</form>
+            <label>Amaiera Ordua</label>
+            <div class="input-box">
+                <input type="time" id="endTime" class="time-input" required>
+            </div>
 
-<div id="map"></div>
-<canvas id="elevationChart"></canvas>
+            
 
-<div id="loadingOverlay" class="hidden">
-    <div class="loader">
-        <div class="spinner"></div>
-        <p>Fetching weather along your route…</p>
+            <div id="form-instructions">
+                <p>
+                    Ez baduzu GPX fitxategirik, klikatu
+                    <a href="https://gpx.studio/app" target="_blank">hemen</a>
+                    bat sortzeko
+                </p>
+            </div>
+            
+            <button class="button">Eguraldia ikusi</button>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+        <div class="map-wrapper">
+            <div id="map"></div>
+        </div>
     </div>
 </div>
 
+<canvas id="elevationChart"></canvas>
 
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="hidden">
+    <div class="loader">
+        <div class="spinner-box">
+            <div class="circle-border">
+                <div class="circle-core"></div>
+            </div>  
+        </div>
+        <p>Bidean zehar edukiko dezun eguraldia lortzen...</p>
+    </div>
+</div>
+
+<footer>
+    <p>
+        Created by Cian Aranburu · Data from <a href="https://open-meteo.com/">Open-Meteo</a> · Map by <a href="https://leafletjs.com/">Leaflet</a> · Elevation by <a href="https://open-elevation.com/">Open-Elevation</a> · Github <a href="https://github.com/cianaranburu">cianaranburu</a>
+    </p>
+</footer>
+
+<!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!--<script src="script.js"></script>-->
 <script type="module" src="./js/main.js"></script>
 
 </body>

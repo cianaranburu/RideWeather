@@ -118,7 +118,7 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
 
     timestamps = interpolate_timestamps(points, start_time, end_time)
 
-    STEP_KM = 6.0  # 🔧 change distance between weather samples here
+    STEP_KM = 4.0  #  change distance between weather samples here
 
     selected_indices = select_points_by_distance(points, distances, STEP_KM)
 

@@ -1,12 +1,288 @@
-body { font-family: Arial, sans-serif; margin: 20px; }
-        #map { height: 400px; margin-top: 20px; }
-        #elevationChart { height: 200px; margin-top: 20px; }
-        label { display: block; margin-top: 10px; }
+/************************************************************
+ * THEME VARIABLES
+ ************************************************************/
+:root {
+    --bg-main: #020617;
+    --bg-surface: rgba(22, 27, 34, 0.85);
+    --bg-elevated: #1f2933;
 
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+
+    --border-light: #2d3748;
+
+    --color-primary: #3b82f6;
+    --color-elevation: #1bce78;
+
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/************************************************************
+ * GRID BACKGROUND
+ ************************************************************/
+#background {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #020617;
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to right, rgba(79, 79, 79, 0.18) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(79, 79, 79, 0.18) 1px, transparent 1px);
+    background-size: 14px 24px;
+    mask-image: radial-gradient(
+        ellipse 60% 50% at 50% 0%,
+        #000 70%,
+        transparent 100%
+    );
+    -webkit-mask-image: radial-gradient(
+        ellipse 60% 50% at 50% 0%,
+        #000 70%,
+        transparent 100%
+    );
+
+}
+
+/************************************************************
+ * BASE
+ ************************************************************/
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 20px;
+    font-family: "Inter", sans-serif;
+    font-size: 15px;
+    background: transparent;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.app-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.app-icon {
+    width: 64px;
+    height: 64px;
+    opacity: 0.9;
+}
+
+h2 {
+    font-size: 40px;              /* bigger */
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0;
+}
+
+
+/************************************************************
+ * LAYOUT
+ ************************************************************/
+.top-layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 20px;
+    align-items: stretch;
+    min-height: 420px;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+/************************************************************
+ * FORM
+ ************************************************************/
+#form-instructions {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+#form-instructions a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+form {
+    padding: 22px;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 14px;
+    color: var(--text-secondary);
+}
+
+input {
+    width: 70%;
+    margin-top: 6px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 12px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+input::file-selector-button {
+    font-weight: bold;
+    background-color: transparent;
+    color: var(--color-elevation);
+    border: none;
+    font: inherit;
+    padding: 0.5em;
+}
+
+input::file-selector-button:hover {
+    color: #03964f;
+}
+
+#rideForm input{
+
+    padding: 12px 17px;
+    border: 0;
+    border-radius: 7px;
+
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: radial-gradient(
+        ellipse at bottom,
+        rgba(71, 81, 92, 1) 0%,
+        rgba(11, 21, 30, 1) 45%
+    );
+
+    color: rgb(255, 255, 255, 0.66);
+
+    transition: all 1s cubic-bezier(0.15, 0.83, 0.66, 1);
+
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator{
+    opacity: 0;
+    width: 120px;
+    height: 20px;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    height: 20px;
+    width: 120px;
+}
+
+
+.button {
+    margin-top: 20px;
+    min-width: 120px;
+
+    font-family: "Inter", sans-serif;
+
+    position: relative;
+    cursor: pointer;
+
+    padding: 12px 17px;
+    border: 0;
+    border-radius: 7px;
+
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: radial-gradient(
+        ellipse at bottom,
+        rgba(71, 81, 92, 1) 0%,
+        rgba(11, 21, 30, 1) 45%
+    );
+
+    color: rgb(255, 255, 255, 0.66);
+
+    transition: all 1s cubic-bezier(0.15, 0.83, 0.66, 1);
+}
+
+.button::before {
+    content: "";
+    width: 70%;
+    height: 1px;
+
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+
+    background: rgb(255, 255, 255);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    opacity: 0.2;
+
+    transition: all 1s cubic-bezier(0.15, 0.83, 0.66, 1);
+}
+
+.button:hover {
+    color: rgb(255, 255, 255, 1);
+    transform: scale(1.1) translateY(-3px);
+}
+
+.button:hover::before {
+    opacity: 1;
+}
+
+/************************************************************
+ * MAP & CHART
+ ************************************************************/
+.map-wrapper {
+    height: 100%;
+    min-height: 420px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-surface);
+    backdrop-filter: blur(6px);
+    box-shadow: var(--shadow-soft);
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#elevationChart {
+    margin-top: 20px;
+    height: 240px;
+    padding: 10px;
+    
+}
+
+/************************************************************
+ * LOADING OVERLAY
+ ************************************************************/
 #loadingOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(2, 6, 23, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -18,21 +294,140 @@ body { font-family: Arial, sans-serif; margin: 20px; }
 }
 
 .loader {
+    background: #161b22;
+    padding: 26px 30px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    font-size: 14px;
+    color: var(--text-secondary);
     text-align: center;
-    font-size: 1.1em;
-    color: #333;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    backdrop-filter: blur(6px);
 }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 6px solid #ddd;
-    border-top: 6px solid #3498db;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    animation: spin 1s linear infinite;
-}
-
+/* From Uiverse.io by DevPTG */ 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+@keyframes spin3D {
+  from {
+    transform: rotate3d(.5,.5,.5, 360deg);
+  }
+
+  to {
+    transform: rotate3d(0deg);
+  }
+}
+
+@keyframes configure-clockwise {
+  0% {
+    transform: rotate(0);
+  }
+
+  25% {
+    transform: rotate(90deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(270deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes configure-xclockwise {
+  0% {
+    transform: rotate(45deg);
+  }
+
+  25% {
+    transform: rotate(-45deg);
+  }
+
+  50% {
+    transform: rotate(-135deg);
+  }
+
+  75% {
+    transform: rotate(-225deg);
+  }
+
+  100% {
+    transform: rotate(-315deg);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: .25;
+    transform: scale(.75);
+  }
+}
+
+.circle-border {
+  width: 50px;
+  height: 50px;
+  padding: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: rgb(63,249,220);
+  background: linear-gradient(0deg, rgba(63,249,220,0.1) 33%, rgb(5, 255, 138) 100%);
+  animation: spin .8s linear 0s infinite;
+}
+
+.circle-core {
+  width: 100%;
+  height: 100%;
+  background-color: #04090e00;
+  border-radius: 50%;
+}
+
+
+/************************************************************
+ * FOOTER
+ ************************************************************/
+footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/************************************************************
+ * RESPONSIVE
+ ************************************************************/
+@media (max-width: 900px) {
+    .top-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .map-wrapper {
+        min-height: 360px;
+    }
 }

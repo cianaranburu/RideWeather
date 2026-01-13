@@ -34,9 +34,9 @@ export function tempColor(t) {
 
 export function precipColor(mm) {
     if (!mm) return 'rgba(0,0,0,0)';
-    if (mm < 0.1) return 'rgba(180,220,255,0.3)';
-    if (mm < 0.5) return 'rgba(120,180,255,0.45)';
-    if (mm < 1.0) return 'rgba(70,140,255,0.6)';
-    if (mm < 2.5) return 'rgba(30,90,200,0.75)';
-    return 'rgba(0,20,100,0.9)';
+    if (mm < 0.1) return 'rgba(180,220,255,0.2)';
+    if (mm < 0.5) return 'rgba(120,180,255,0.35)';
+    if (mm < 1.0) return 'rgba(70,140,255,0.5)';
+    if (mm < 2.5) return 'rgba(30,90,200,0.65)';
+    return 'rgba(0,20,100,0.8)';
 }
