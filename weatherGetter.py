@@ -3,7 +3,6 @@ from datetime import datetime
 import requests
 import io
 import math
-import time
 
 
 # --------------------------------
@@ -130,7 +129,6 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
         ts = timestamps[i]
 
         weather = get_weather_open_meteo(lat, lon, ts)
-        time.sleep(0.1) #100ms between request
 
         results.append({
             "lat": lat,
@@ -145,5 +143,6 @@ def get_ride_weather(file_obj, start_time_str, end_time_str):
         "full_path": points,
         "elevation_profile": elevations
     }
+
 
 
